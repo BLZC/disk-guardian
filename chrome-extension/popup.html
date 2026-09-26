@@ -1,0 +1,91 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>磁盘守望台</title>
+    <link rel="stylesheet" href="popup.css" />
+    <script src="popup.js" defer></script>
+  </head>
+  <body>
+    <main class="popup-shell">
+      <header>
+        <div class="brand">
+          <span class="brand-mark" aria-hidden="true">
+            <i></i><i></i><i></i>
+          </span>
+          <div>
+            <small>LOCAL RESOURCE GUARD</small>
+            <h1>磁盘守望台</h1>
+          </div>
+        </div>
+        <span class="connection" id="connection-state">连接中</span>
+      </header>
+
+      <section class="disk-card">
+        <div>
+          <span>剩余空间</span>
+          <strong id="disk-free">--</strong>
+          <small>GiB</small>
+        </div>
+        <div class="disk-meta">
+          <span id="disk-label">读取中</span>
+          <span id="disk-used">--% 已用</span>
+        </div>
+        <div class="meter"><span id="disk-meter"></span></div>
+      </section>
+
+      <section class="resource-grid">
+        <article>
+          <span>CPU</span>
+          <strong id="cpu-value">--%</strong>
+          <small id="cpu-state">读取中</small>
+        </article>
+        <article>
+          <span>内存</span>
+          <strong id="memory-value">--%</strong>
+          <small id="memory-state">-- GiB 可用</small>
+        </article>
+        <article>
+          <span>Swap</span>
+          <strong id="swap-value">--%</strong>
+          <small id="swap-state">-- GiB 已用</small>
+        </article>
+      </section>
+
+      <section class="guard-row">
+        <div>
+          <span class="status-dot" id="guard-dot"></span>
+          <div>
+            <strong id="guard-title">检查自动清理</strong>
+            <small id="guard-detail">等待本机数据</small>
+          </div>
+        </div>
+        <span class="candidate-badge" id="cleanup-state">--</span>
+      </section>
+
+      <section class="processes">
+        <div class="section-head">
+          <strong>高占用进程</strong>
+          <span id="process-mode">CPU Top 3</span>
+        </div>
+        <div id="process-list" class="process-list"></div>
+      </section>
+
+      <section class="actions">
+        <button id="refresh-button" class="secondary" type="button">刷新</button>
+        <button id="dashboard-button" class="primary" type="button">打开完整面板</button>
+      </section>
+
+      <footer>
+        <span id="updated-at">尚未更新</span>
+        <span>仅连接本机</span>
+      </footer>
+    </main>
+    <div class="offline" id="offline-panel" hidden>
+      <strong>本机服务未连接</strong>
+      <p>请确认磁盘守望台 companion 正在运行。</p>
+      <button id="offline-retry" type="button">重新连接</button>
+    </div>
+  </body>
+</html>

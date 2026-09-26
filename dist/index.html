@@ -1,0 +1,578 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta
+      name="description"
+      content="本机磁盘空间、自动清理守护进程和 Go 构建状态实时监控面板"
+    />
+    <meta name="color-scheme" content="dark" />
+    <title>磁盘守望台</title>
+    <link
+      rel="icon"
+      type="image/svg+xml"
+      href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='16' fill='%230b1013'/%3E%3Cpath d='M18 42V26c0-6 5-10 14-10s14 4 14 10v16c0 4-5 7-14 7s-14-3-14-7Z' fill='none' stroke='%238cffd5' stroke-width='4'/%3E%3Cellipse cx='32' cy='26' rx='14' ry='7' fill='none' stroke='%238cffd5' stroke-width='4'/%3E%3Ccircle cx='39' cy='40' r='3' fill='%23ffca67'/%3E%3C/svg%3E"
+    />
+    <link rel="stylesheet" href="/styles.css" />
+    <script src="/app.js" defer></script>
+  </head>
+  <body>
+    <div class="ambient ambient-one"></div>
+    <div class="ambient ambient-two"></div>
+
+    <main class="shell">
+      <header class="topbar">
+        <div class="brand">
+          <div class="brand-mark" aria-hidden="true">
+            <span></span>
+            <span></span>
+            <span></span>
+          </div>
+          <div>
+            <p class="eyebrow">LOCAL SYSTEM / DISK</p>
+            <h1>磁盘守望台</h1>
+          </div>
+        </div>
+        <div class="live-status">
+          <span class="live-dot" id="live-dot"></span>
+          <span id="connection-label">连接中</span>
+          <time id="last-updated">--:--:--</time>
+        </div>
+      </header>
+
+      <section class="resource-strip" aria-label="系统资源概览">
+        <article class="resource-card">
+          <div class="resource-card-head">
+            <span>CPU</span>
+            <span class="resource-state" id="cpu-state">读取中</span>
+          </div>
+          <div class="resource-main">
+            <strong id="cpu-percent">--%</strong>
+            <span id="cpu-cores">-- 核</span>
+          </div>
+          <div class="resource-meter">
+            <span id="cpu-meter"></span>
+          </div>
+          <p id="cpu-load">Load -- / -- / --</p>
+        </article>
+
+        <article class="resource-card">
+          <div class="resource-card-head">
+            <span>内存</span>
+            <span class="resource-state" id="memory-state">读取中</span>
+          </div>
+          <div class="resource-main">
+            <strong id="memory-percent">--%</strong>
+            <span id="memory-available">-- GiB 可用</span>
+          </div>
+          <div class="resource-meter">
+            <span id="memory-meter"></span>
+          </div>
+          <p id="memory-detail">-- / -- GiB</p>
+        </article>
+
+        <article class="resource-card">
+          <div class="resource-card-head">
+            <span>Swap</span>
+            <span class="resource-state" id="swap-state">读取中</span>
+          </div>
+          <div class="resource-main">
+            <strong id="swap-percent">--%</strong>
+            <span id="swap-used">-- GiB 已用</span>
+          </div>
+          <div class="resource-meter">
+            <span id="swap-meter"></span>
+          </div>
+          <p id="swap-detail">共 -- GiB</p>
+        </article>
+
+        <article class="resource-card resource-guard-card">
+          <div class="resource-card-head">
+            <span>资源治理</span>
+            <span class="resource-state" id="resource-guard-state">读取中</span>
+          </div>
+          <div class="resource-main">
+            <strong id="resource-candidates">--</strong>
+            <span>观察候选</span>
+          </div>
+          <div class="resource-meter">
+            <span id="resource-guard-meter"></span>
+          </div>
+          <p id="resource-guard-copy">仅治理临时测试进程</p>
+        </article>
+      </section>
+
+      <section class="hero-grid" aria-label="磁盘概览">
+        <article class="panel gauge-panel">
+          <div class="panel-heading">
+            <div>
+              <p class="eyebrow">FREE CAPACITY</p>
+              <h2>剩余空间</h2>
+            </div>
+            <span class="state-pill" id="disk-state">读取中</span>
+          </div>
+
+          <div class="gauge-wrap">
+            <svg
+              class="gauge"
+              viewBox="0 0 240 240"
+              role="img"
+              aria-labelledby="gauge-title gauge-description"
+            >
+              <title id="gauge-title">磁盘剩余空间</title>
+              <desc id="gauge-description">正在读取磁盘数据</desc>
+              <circle class="gauge-track" cx="120" cy="120" r="94"></circle>
+              <circle
+                class="gauge-progress"
+                id="gauge-progress"
+                cx="120"
+                cy="120"
+                r="94"
+              ></circle>
+              <circle
+                class="gauge-marker threshold-marker"
+                id="threshold-marker"
+                cx="120"
+                cy="26"
+                r="4"
+              ></circle>
+              <circle
+                class="gauge-marker target-marker"
+                id="target-marker"
+                cx="120"
+                cy="26"
+                r="4"
+              ></circle>
+            </svg>
+            <div class="gauge-value">
+              <strong id="free-gib">--</strong>
+              <span>GiB 可用</span>
+            </div>
+          </div>
+
+          <div class="capacity-row">
+            <div>
+              <span>已用</span>
+              <strong id="used-gib">-- GiB</strong>
+            </div>
+            <div>
+              <span>总容量</span>
+              <strong id="total-gib">-- GiB</strong>
+            </div>
+            <div>
+              <span>使用率</span>
+              <strong id="used-percent">--%</strong>
+            </div>
+          </div>
+
+          <div class="threshold-bar">
+            <div class="threshold-scale">
+              <span id="threshold-label">10G 清理线</span>
+              <span id="target-label">20G 恢复线</span>
+            </div>
+            <div class="bar-track">
+              <span class="danger-zone" id="danger-zone"></span>
+              <span class="recovery-zone" id="recovery-zone"></span>
+              <span class="bar-pin" id="bar-pin"></span>
+            </div>
+          </div>
+        </article>
+
+        <article class="panel guard-panel">
+          <div class="panel-heading">
+            <div>
+              <p class="eyebrow">AUTOMATION</p>
+              <h2>自动清理守护</h2>
+            </div>
+            <span class="state-pill" id="guard-state">读取中</span>
+          </div>
+
+          <div class="guard-orbit" aria-hidden="true">
+            <div class="orbit-ring orbit-ring-one"></div>
+            <div class="orbit-ring orbit-ring-two"></div>
+            <div class="guard-core">
+              <span class="guard-core-dot"></span>
+            </div>
+          </div>
+
+          <div class="guard-summary">
+            <strong id="guard-summary-title">检查服务状态</strong>
+            <p id="guard-summary-copy">正在连接本机守护进程。</p>
+          </div>
+
+          <dl class="definition-grid">
+            <div>
+              <dt>检查周期</dt>
+              <dd id="guard-interval">--</dd>
+            </div>
+            <div>
+              <dt>累计运行</dt>
+              <dd id="guard-runs">--</dd>
+            </div>
+            <div>
+              <dt>最近退出码</dt>
+              <dd id="guard-exit">--</dd>
+            </div>
+            <div>
+              <dt>保护状态</dt>
+              <dd id="pressure-state">--</dd>
+            </div>
+          </dl>
+        </article>
+
+        <article class="panel builds-panel">
+          <div class="panel-heading">
+            <div>
+              <p class="eyebrow">ACTIVE WORKLOAD</p>
+              <h2>Go 构建活动</h2>
+            </div>
+            <span class="metric-badge" id="build-count">--</span>
+          </div>
+
+          <div id="build-list" class="build-list" aria-live="polite">
+            <div class="empty-state">
+              <span class="empty-icon"></span>
+              <p>正在检查运行中的构建</p>
+            </div>
+          </div>
+
+          <div class="protect-note">
+            <span class="protect-icon" aria-hidden="true">⌁</span>
+            <p>
+              活跃构建存在时，共享缓存和相关临时目录会自动跳过。
+            </p>
+          </div>
+        </article>
+      </section>
+
+      <section class="detail-grid">
+        <article class="panel trend-panel">
+          <div class="panel-heading">
+            <div>
+              <p class="eyebrow">LIVE TREND</p>
+              <h2>空间趋势</h2>
+            </div>
+            <div class="trend-range">
+              <span>浏览器会话</span>
+              <strong id="trend-delta">--</strong>
+            </div>
+          </div>
+          <div class="chart-wrap">
+            <svg
+              id="trend-chart"
+              class="trend-chart"
+              viewBox="0 0 780 230"
+              preserveAspectRatio="none"
+              role="img"
+              aria-label="最近磁盘剩余空间趋势"
+            >
+              <defs>
+                <linearGradient
+                  id="area-gradient"
+                  x1="0"
+                  y1="0"
+                  x2="0"
+                  y2="1"
+                >
+                  <stop offset="0%" stop-color="#8cffd5" stop-opacity=".32" />
+                  <stop offset="100%" stop-color="#8cffd5" stop-opacity="0" />
+                </linearGradient>
+              </defs>
+              <g id="chart-grid"></g>
+              <path id="chart-area" class="chart-area"></path>
+              <path id="chart-line" class="chart-line"></path>
+              <g id="chart-points"></g>
+            </svg>
+            <div class="chart-axis">
+              <span id="trend-start">现在</span>
+              <span id="trend-end">实时</span>
+            </div>
+          </div>
+        </article>
+
+        <article class="panel storage-panel">
+          <div class="panel-heading">
+            <div>
+              <p class="eyebrow">REBUILDABLE STORAGE</p>
+              <h2>可重建占用</h2>
+            </div>
+            <span class="sample-time" id="sample-time">等待采样</span>
+          </div>
+
+          <div class="storage-list">
+            <div class="storage-item">
+              <div class="storage-name">
+                <span class="storage-swatch swatch-mint"></span>
+                <div>
+                  <strong>Go 构建缓存</strong>
+                  <span>codex-go-build</span>
+                </div>
+              </div>
+              <div class="storage-value">
+                <strong id="go-cache-size">--</strong>
+                <span id="go-cache-bar" class="mini-bar"></span>
+              </div>
+            </div>
+            <div class="storage-item">
+              <div class="storage-name">
+                <span class="storage-swatch swatch-blue"></span>
+                <div>
+                  <strong>Go 模块缓存</strong>
+                  <span>受保护，不自动清理</span>
+                </div>
+              </div>
+              <div class="storage-value">
+                <strong id="module-cache-size">--</strong>
+                <span id="module-cache-bar" class="mini-bar"></span>
+              </div>
+            </div>
+            <div class="storage-item">
+              <div class="storage-name">
+                <span class="storage-swatch swatch-amber"></span>
+                <div>
+                  <strong>Go 临时目录</strong>
+                  <span id="go-temp-count">-- 个目录</span>
+                </div>
+              </div>
+              <div class="storage-value">
+                <strong id="go-temp-size">--</strong>
+                <span id="go-temp-bar" class="mini-bar"></span>
+              </div>
+            </div>
+            <div class="storage-item">
+              <div class="storage-name">
+                <span class="storage-swatch swatch-violet"></span>
+                <div>
+                  <strong>大型测试二进制</strong>
+                  <span id="test-binary-count">-- 个文件</span>
+                </div>
+              </div>
+              <div class="storage-value">
+                <strong id="test-binary-size">--</strong>
+                <span id="test-binary-bar" class="mini-bar"></span>
+              </div>
+            </div>
+          </div>
+        </article>
+      </section>
+
+      <section class="process-grid">
+        <article class="panel process-panel">
+          <div class="panel-heading">
+            <div>
+              <p class="eyebrow">PROCESS RANKING</p>
+              <h2>进程资源排行</h2>
+            </div>
+            <div class="process-tabs" role="tablist" aria-label="排行维度">
+              <button class="process-tab active" id="cpu-tab" type="button">
+                CPU
+              </button>
+              <button class="process-tab" id="memory-tab" type="button">
+                内存
+              </button>
+            </div>
+          </div>
+          <div class="process-table-head">
+            <span>进程</span>
+            <span>运行时间</span>
+            <span id="process-metric-label">CPU</span>
+          </div>
+          <div id="process-list" class="process-list" aria-live="polite"></div>
+          <p class="process-note">
+            普通应用和系统进程仅展示告警，不会被自动终止。
+          </p>
+        </article>
+
+        <article class="panel resource-policy-panel">
+          <div class="panel-heading">
+            <div>
+              <p class="eyebrow">RESOURCE GUARD</p>
+              <h2>资源自动治理</h2>
+            </div>
+            <span class="state-pill" id="resource-policy-state">读取中</span>
+          </div>
+          <div class="resource-policy-copy">
+            <strong id="resource-policy-title">检查资源守护</strong>
+            <p id="resource-policy-description">
+              正在读取 CPU 与内存治理策略。
+            </p>
+          </div>
+          <dl class="definition-grid resource-definition-grid">
+            <div>
+              <dt>CPU 门槛</dt>
+              <dd id="resource-cpu-threshold">--</dd>
+            </div>
+            <div>
+              <dt>内存门槛</dt>
+              <dd id="resource-memory-threshold">--</dd>
+            </div>
+            <div>
+              <dt>最短运行</dt>
+              <dd id="resource-min-runtime">--</dd>
+            </div>
+            <div>
+              <dt>最长观察</dt>
+              <dd id="resource-max-runtime">--</dd>
+            </div>
+          </dl>
+          <div class="resource-action-receipt" id="resource-action-receipt">
+            <span class="receipt-dot"></span>
+            <p>暂无自动治理动作</p>
+          </div>
+        </article>
+      </section>
+
+      <section class="cleanup-section">
+        <article class="panel cleanup-panel">
+          <div class="panel-heading">
+            <div>
+              <p class="eyebrow">MANUAL CLEANUP</p>
+              <h2>主动垃圾清理</h2>
+            </div>
+            <span class="state-pill" id="cleanup-state">等待扫描</span>
+          </div>
+
+          <div class="cleanup-intro">
+            <div>
+              <strong>先扫描，再确认执行</strong>
+              <p>
+                仅扫描可重建开发产物；执行前重新检查进程、打开文件、所有者和内容变化。
+              </p>
+            </div>
+            <button class="primary-button" id="cleanup-scan-button" type="button">
+              扫描可清理项
+            </button>
+          </div>
+
+          <div class="cleanup-summary" id="cleanup-summary" hidden>
+            <div class="cleanup-total">
+              <span>全部候选</span>
+              <strong id="cleanup-total-gib">0 GiB</strong>
+              <small id="cleanup-expiry">计划有效 5 分钟</small>
+            </div>
+            <div class="cleanup-categories" id="cleanup-categories"></div>
+          </div>
+
+          <div class="cleanup-items-wrap" id="cleanup-items-wrap" hidden>
+            <div class="cleanup-list-head">
+              <label class="check-control">
+                <input id="cleanup-select-all" type="checkbox" />
+                <span>全选安全项</span>
+              </label>
+              <span id="cleanup-selected-summary">已选 0 项</span>
+            </div>
+            <div class="cleanup-items" id="cleanup-items"></div>
+            <div class="cleanup-skipped" id="cleanup-skipped"></div>
+            <div class="cleanup-actions">
+              <p>执行时若发现构建启动或文件发生变化，该项目会自动跳过。</p>
+              <button
+                class="danger-button"
+                id="cleanup-execute-button"
+                type="button"
+                disabled
+              >
+                清理已选项目
+              </button>
+            </div>
+          </div>
+
+          <div class="cleanup-receipt" id="manual-cleanup-receipt" hidden></div>
+        </article>
+      </section>
+
+      <section class="bottom-grid">
+        <article class="panel receipt-panel">
+          <div class="panel-heading">
+            <div>
+              <p class="eyebrow">LATEST RECEIPT</p>
+              <h2>最近清理记录</h2>
+            </div>
+            <time id="receipt-time">暂无记录</time>
+          </div>
+          <div id="receipt-content" class="receipt-content">
+            <div class="empty-state horizontal">
+              <span class="empty-icon"></span>
+              <p>低空间触发后，这里会显示清理结果与跳过原因。</p>
+            </div>
+          </div>
+        </article>
+
+        <article class="panel policy-panel">
+          <div class="panel-heading">
+            <div>
+              <p class="eyebrow">SAFETY POLICY</p>
+              <h2>保护规则</h2>
+            </div>
+            <span class="shield" aria-hidden="true">◇</span>
+          </div>
+          <ul class="policy-list">
+            <li>
+              <span class="policy-index">01</span>
+              <div>
+                <strong>先检查，再删除</strong>
+                <p>路径、所有者、进程参数与打开文件必须全部通过。</p>
+              </div>
+            </li>
+            <li>
+              <span class="policy-index">02</span>
+              <div>
+                <strong>活跃构建自动保护</strong>
+                <p>检测到 Go 编译时跳过共享缓存和临时构建目录。</p>
+              </div>
+            </li>
+            <li>
+              <span class="policy-index">03</span>
+              <div>
+                <strong>模块与业务数据保留</strong>
+                <p>模块缓存、项目、工作树、会话和个人文件不清理。</p>
+              </div>
+            </li>
+          </ul>
+        </article>
+      </section>
+
+      <footer>
+        <span>仅本机访问 · 127.0.0.1</span>
+        <span id="footer-version">磁盘守护 · 每 60 秒检查</span>
+      </footer>
+    </main>
+
+    <div class="modal-backdrop" id="cleanup-confirm-modal" hidden>
+      <section
+        class="confirm-modal"
+        role="alertdialog"
+        aria-modal="true"
+        aria-labelledby="confirm-title"
+        aria-describedby="confirm-description"
+      >
+        <div class="confirm-icon" aria-hidden="true">!</div>
+        <h2 id="confirm-title">确认清理已选项目</h2>
+        <p id="confirm-description">
+          删除后需要重新构建，无法从垃圾箱恢复。
+        </p>
+        <div class="confirm-stats">
+          <div>
+            <span>项目数量</span>
+            <strong id="confirm-count">0</strong>
+          </div>
+          <div>
+            <span>预计释放</span>
+            <strong id="confirm-size">0 GiB</strong>
+          </div>
+        </div>
+        <div class="confirm-list" id="confirm-list"></div>
+        <div class="confirm-actions">
+          <button class="secondary-button" id="cleanup-cancel-button" type="button">
+            取消
+          </button>
+          <button class="danger-button" id="cleanup-confirm-button" type="button">
+            确认清理
+          </button>
+        </div>
+      </section>
+    </div>
+
+    <div id="toast" class="toast" role="status" aria-live="polite"></div>
+  </body>
+</html>
