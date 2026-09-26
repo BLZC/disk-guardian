@@ -44,7 +44,7 @@ Native Messaging。
 1. Chrome 扩展本身不能删除 macOS 文件
 2. 用户必须单独安装本机 Companion
 3. 自动清理由当前用户权限下的 Companion 执行
-4. 默认低于 10 GiB 触发，恢复到 20 GiB 停止
+4. 默认低于 20 GiB 触发，恢复到 30 GiB 停止
 5. 删除范围是固定白名单，具体见安全文档
 6. 用户可以通过卸载 Companion 完全停用自动清理
 
@@ -70,6 +70,12 @@ ccpomkognonnccbjmiapheoadpnepnde
 商店 Public key，再更新源码 `manifest.json` 的 `key`，使后续开发版与商店
 版本使用相同 ID。
 
+当前商店 Item ID：
+
+```text
+knfhjpciofoakljbmneaaailglnmamlk
+```
+
 ## 上架素材
 
 准备以下素材：
@@ -90,7 +96,7 @@ ZIP 根目录必须直接包含 `manifest.json`。首次商店上传使用：
 
 ```bash
 python3 scripts/package_chrome_store.py
-shasum -a 256 -c disk-guard-chrome-store-0.2.0.zip.sha256
+shasum -a 256 -c disk-guard-chrome-store-0.2.1.zip.sha256
 ```
 
 商店包不含开发版 `key`。提交前解压到空目录并通过

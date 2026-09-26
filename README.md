@@ -21,8 +21,8 @@ Companion 执行。因此，只安装扩展无法获得自动清理能力。
 
 - 每 3 秒刷新完整面板，每分钟刷新 Chrome 工具栏徽标
 - 展示磁盘、CPU、内存、Swap、系统 Load 和进程排行
-- 剩余空间低于 `10 GiB` 时自动触发磁盘清理
-- 可用空间恢复到 `20 GiB` 后停止清理
+- 剩余空间低于 `20 GiB` 时自动触发磁盘清理
+- 可用空间恢复到 `30 GiB` 后停止清理
 - 主动清理使用“扫描 → 选择 → 二次确认 → 执行”流程
 - 自动保护活跃 Go 构建、打开文件、符号链接和 Git 数据
 - 资源守护只处理当前用户临时目录中的异常 Mach-O `.test` 进程
@@ -96,7 +96,7 @@ Chrome Web Store 上架后扩展 ID 可能变化。使用商店版 ID 重新运�
 自定义阈值：
 
 ```bash
-./scripts/install.sh --threshold-gib 10 --target-gib 20
+./scripts/install.sh --threshold-gib 20 --target-gib 30
 ```
 
 检查服务、API 和错误日志：

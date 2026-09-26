@@ -34,7 +34,7 @@ def release_id() -> str:
         digest = hashlib.sha256((ROOT / relative).read_bytes()).hexdigest()
         lines.append(f"{digest}  {relative}\n")
     digest = hashlib.sha256("".join(lines).encode()).hexdigest()
-    return f"0.2.0-{digest[:12]}"
+    return f"0.2.1-{digest[:12]}"
 
 
 class ScriptTests(unittest.TestCase):
@@ -122,6 +122,7 @@ class ScriptTests(unittest.TestCase):
             (self.install / "install.json").read_text()
         )
         self.assertEqual(config["release_id"], identity)
+        self.assertEqual(config["version"], "0.2.1")
         self.assertEqual(config["threshold_gib"], 11)
         self.assertEqual(config["target_gib"], 23)
         self.assertEqual(

@@ -73,8 +73,8 @@ def read_json(path: Path) -> dict[str, Any]:
 
 def read_guard_config() -> dict[str, int]:
     defaults = {
-        "threshold_gib": 10,
-        "target_gib": 20,
+        "threshold_gib": 20,
+        "target_gib": 30,
         "min_age_seconds": 3600,
         "cache_quiet_seconds": 300,
         "interval_seconds": 60,
@@ -86,10 +86,10 @@ def read_guard_config() -> dict[str, int]:
         defaults.update(
             {
                 "threshold_gib": int(
-                    environment.get("DISK_GUARDIAN_THRESHOLD_GIB", 10)
+                    environment.get("DISK_GUARDIAN_THRESHOLD_GIB", 20)
                 ),
                 "target_gib": int(
-                    environment.get("DISK_GUARDIAN_TARGET_GIB", 20)
+                    environment.get("DISK_GUARDIAN_TARGET_GIB", 30)
                 ),
                 "min_age_seconds": int(
                     max(

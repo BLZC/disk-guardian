@@ -34,10 +34,10 @@ STATE_DIR = Path(
 STATE_PATH = STATE_DIR / "disk_guard_state.json"
 
 THRESHOLD_GIB = int(
-    os.environ.get("DISK_GUARDIAN_THRESHOLD_GIB", "10")
+    os.environ.get("DISK_GUARDIAN_THRESHOLD_GIB", "20")
 )
 TARGET_GIB = int(
-    os.environ.get("DISK_GUARDIAN_TARGET_GIB", "20")
+    os.environ.get("DISK_GUARDIAN_TARGET_GIB", "30")
 )
 HEALTHY_HEARTBEAT_SECONDS = int(
     os.environ.get(

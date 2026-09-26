@@ -41,7 +41,7 @@
 3. 检查 `disk-guard` 是否 `loaded=yes`
 4. 查看 `disk-guard.err.log`
 
-## 空间低于 10 GiB 但没有删除
+## 空间低于 20 GiB 但没有删除
 
 这通常意味着没有通过白名单的安全候选。检查
 `disk_guard_state.json` 的 `last_event.actions`：
@@ -59,7 +59,7 @@
 - `active_or_open`：具体子项正在使用
 - `root_safety`：缓存根路径或所有者不符合不变量
 
-守护不会为达到 20 GiB 擅自删除白名单外内容。
+守护不会为达到 30 GiB 擅自删除白名单外内容。
 
 ## 首次安装时 psutil 失败
 

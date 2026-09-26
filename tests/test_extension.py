@@ -33,6 +33,7 @@ class ExtensionManifestTests(unittest.TestCase):
         )
 
     def test_manifest_has_fixed_expected_id(self) -> None:
+        self.assertEqual(self.manifest["version"], "0.2.1")
         self.assertEqual(
             extension_id(self.manifest["key"]),
             EXPECTED_ID,
@@ -79,6 +80,7 @@ class ExtensionManifestTests(unittest.TestCase):
             with zipfile.ZipFile(package) as archive:
                 manifest = json.loads(archive.read("manifest.json"))
                 self.assertNotIn("key", manifest)
+                self.assertEqual(manifest["version"], "0.2.1")
                 self.assertEqual(archive.namelist()[0], "manifest.json")
 
 

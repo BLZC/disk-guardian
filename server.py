@@ -23,7 +23,8 @@ EXTENSION_ORIGINS = {
     origin.strip()
     for origin in os.environ.get(
         "DISK_GUARDIAN_EXTENSION_ORIGINS",
-        "chrome-extension://ccpomkognonnccbjmiapheoadpnepnde",
+        "chrome-extension://ccpomkognonnccbjmiapheoadpnepnde,"
+        "chrome-extension://knfhjpciofoakljbmneaaailglnmamlk",
     ).split(",")
     if origin.strip().startswith("chrome-extension://")
 }

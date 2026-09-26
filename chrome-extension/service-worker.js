@@ -6,8 +6,8 @@ const ALARM_NAME = "disk-guardian-status-refresh";
 
 function badgeState(payload) {
   const free = payload?.disk?.free_gib;
-  const threshold = payload?.guard?.threshold_gib ?? 10;
-  const target = payload?.guard?.target_gib ?? 20;
+  const threshold = payload?.guard?.threshold_gib ?? 20;
+  const target = payload?.guard?.target_gib ?? 30;
   if (!Number.isFinite(free)) {
     return { text: "!", color: "#ff726f", title: "本机守护服务未连接" };
   }

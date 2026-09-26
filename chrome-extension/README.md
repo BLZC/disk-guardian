@@ -29,9 +29,9 @@ ccpomkognonnccbjmiapheoadpnepnde
 
 徽标规则：
 
-- 无徽标：剩余空间不低于 20 GiB
-- 黄色数字：剩余空间低于 20 GiB
-- 红色数字：剩余空间低于 10 GiB
+- 无徽标：剩余空间不低于 30 GiB
+- 黄色数字：剩余空间低于 30 GiB
+- 红色数字：剩余空间低于 20 GiB
 - 红色 `!`：本机 Companion 未连接或自动清理未启用
 
 ## 权限

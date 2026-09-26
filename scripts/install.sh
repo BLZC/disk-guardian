@@ -3,9 +3,10 @@ set -euo pipefail
 
 PRODUCT_NAME="Disk Guardian"
 PRODUCT_SLUG="disk-guardian"
-PRODUCT_VERSION="0.2.0"
+PRODUCT_VERSION="0.2.1"
 LABEL_PREFIX="io.github.blzc.disk-guardian"
 DEFAULT_EXTENSION_ID="ccpomkognonnccbjmiapheoadpnepnde"
+STORE_EXTENSION_ID="knfhjpciofoakljbmneaaailglnmamlk"
 PSUTIL_VERSION="7.2.2"
 PORT=18765
 
@@ -31,8 +32,8 @@ usage() {
 
 选项：
   --extension-id ID   允许访问 Companion 的 Chrome 扩展 ID
-  --threshold-gib N   剩余空间低于 N GiB 时触发（默认 10）
-  --target-gib N      清理到 N GiB 后停止（默认 20）
+  --threshold-gib N   剩余空间低于 N GiB 时触发（默认 20）
+  --target-gib N      清理到 N GiB 后停止（默认 30）
   --no-load           只写入文件，不加载 LaunchAgent
   -h, --help          显示帮助
 
@@ -129,8 +130,8 @@ PY
 fi
 
 EXTENSION_ID="${EXTENSION_ID:-$DEFAULT_EXTENSION_ID}"
-THRESHOLD_GIB="${THRESHOLD_GIB:-10}"
-TARGET_GIB="${TARGET_GIB:-20}"
+THRESHOLD_GIB="${THRESHOLD_GIB:-20}"
+TARGET_GIB="${TARGET_GIB:-30}"
 
 valid_extension_id "$EXTENSION_ID" ||
   fail "Chrome 扩展 ID 必须是 32 位 a-p 字符串"
@@ -339,7 +340,12 @@ DISK_PLIST_NEXT="$INSTALL_ROOT/.disk-guard.plist.next"
 RESOURCE_PLIST_NEXT="$INSTALL_ROOT/.resource-guard.plist.next"
 DASHBOARD_PLIST_NEXT="$INSTALL_ROOT/.dashboard.plist.next"
 
-export RELEASE_DIR STATE_DIR LOG_DIR EXTENSION_ID THRESHOLD_GIB TARGET_GIB
+EXTENSION_IDS="$EXTENSION_ID"
+if test "$EXTENSION_ID" != "$STORE_EXTENSION_ID"; then
+  EXTENSION_IDS="$EXTENSION_IDS,$STORE_EXTENSION_ID"
+fi
+export RELEASE_DIR STATE_DIR LOG_DIR EXTENSION_ID EXTENSION_IDS
+export THRESHOLD_GIB TARGET_GIB
 export PORT DISK_LABEL RESOURCE_LABEL DASHBOARD_LABEL
 export DISK_PLIST_NEXT RESOURCE_PLIST_NEXT DASHBOARD_PLIST_NEXT
 "$PYTHON_BIN" <<'PY'
@@ -380,8 +386,9 @@ resource_env = {
 dashboard_env = {
     **common,
     "DISK_GUARDIAN_PORT": os.environ["PORT"],
-    "DISK_GUARDIAN_EXTENSION_ORIGINS": (
-        "chrome-extension://" + os.environ["EXTENSION_ID"]
+    "DISK_GUARDIAN_EXTENSION_ORIGINS": ",".join(
+        "chrome-extension://" + extension_id
+        for extension_id in os.environ["EXTENSION_IDS"].split(",")
     ),
     "PYTHONUNBUFFERED": "1",
 }

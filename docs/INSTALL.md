@@ -24,8 +24,8 @@
 
 | 配置 | 默认值 |
 |---|---:|
-| 低空间触发线 | 10 GiB |
-| 清理停止线 | 20 GiB |
+| 低空间触发线 | 20 GiB |
+| 清理停止线 | 30 GiB |
 | 检查周期 | 60 秒 |
 | 仪表盘端口 | 18765 |
 | 开发版扩展 ID | `ccpomkognonnccbjmiapheoadpnepnde` |
@@ -35,8 +35,8 @@
 ```bash
 ./scripts/install.sh \
   --extension-id ccpomkognonnccbjmiapheoadpnepnde \
-  --threshold-gib 10 \
-  --target-gib 20
+  --threshold-gib 20 \
+  --target-gib 30
 ```
 
 `target-gib` 必须大于 `threshold-gib`。扩展 ID 必须是 Chrome 使用的

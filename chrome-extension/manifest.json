@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
   "name": "磁盘守望台",
-  "version": "0.2.0",
+  "version": "0.2.1",
   "description": "连接本机 Companion，监控磁盘、CPU、内存并确认白名单自动清理状态。",
   "key": "MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEA1YtnX8SIJKHTjpLV95FfX714FXp8qYDnc2oi3UkMuU6XZWynDPh2EIQtupXg+rCr+nrEgA6aSggFkCh2MErmcXzldnnVz6sfQWWfleXN7RZKgkZKQjwNH2xCB42yDAoCiAX+oC2+WtIQZHtu7rsjwP8PD6r5/fTC5dBqVx4z5LaNNZl5HygzeoxNJz4A+sMMgcwaQX5BzDbuobEcRVQfaKmrYdHXadvhVjtffPIR/7pWdReYgEzzzAeVhWlXys0Kcvj/HsVV242/BvX2+fti4JYJQhjjKV0PNacxNc0JoBlqryJuPVXwaexFM/+SQjEbJi0P698jz0Jzo+xoeYtVtQIDAQAB",
   "minimum_chrome_version": "109",

@@ -19,6 +19,9 @@ import server  # noqa: E402
 EXTENSION_ORIGIN = (
     "chrome-extension://ccpomkognonnccbjmiapheoadpnepnde"
 )
+STORE_EXTENSION_ORIGIN = (
+    "chrome-extension://knfhjpciofoakljbmneaaailglnmamlk"
+)
 
 
 class ExtensionProjectionTests(unittest.TestCase):
@@ -27,14 +30,14 @@ class ExtensionProjectionTests(unittest.TestCase):
             "timestamp": "2026-09-26T12:00:00+08:00",
             "disk": {
                 "total_gib": 100,
-                "used_gib": 90,
-                "free_gib": 10,
-                "used_percent": 90,
-                "free_percent": 10,
+                "used_gib": 80,
+                "free_gib": 20,
+                "used_percent": 80,
+                "free_percent": 20,
             },
             "guard": {
-                "threshold_gib": 10,
-                "target_gib": 20,
+                "threshold_gib": 20,
+                "target_gib": 30,
                 "interval_seconds": 60,
                 "loaded": True,
                 "enabled": True,
@@ -157,6 +160,18 @@ class HttpBoundaryTests(unittest.TestCase):
             origin="https://attacker.example",
         )
         self.assertEqual(response.status, 403)
+
+    def test_store_extension_origin_can_read_projection(self) -> None:
+        response = self.request(
+            "GET",
+            "/api/extension/status",
+            origin=STORE_EXTENSION_ORIGIN,
+        )
+        self.assertEqual(response.status, 200)
+        self.assertEqual(
+            response.getheader("Access-Control-Allow-Origin"),
+            STORE_EXTENSION_ORIGIN,
+        )
 
     def test_extension_origin_cannot_post_cleanup(self) -> None:
         response = self.request(

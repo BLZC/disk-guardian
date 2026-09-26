@@ -12,7 +12,6 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
 EXTENSION_DIR = ROOT / "chrome-extension"
-OUTPUT = ROOT / "disk-guard-chrome-store-0.2.0.zip"
 ZIP_TIMESTAMP = (2026, 1, 1, 0, 0, 0)
 
 
@@ -26,14 +25,18 @@ def add_bytes(
 
 
 def parse_args() -> argparse.Namespace:
+    manifest = json.loads((EXTENSION_DIR / "manifest.json").read_text())
+    default_output = (
+        ROOT / f"disk-guard-chrome-store-{manifest['version']}.zip"
+    )
     parser = argparse.ArgumentParser(
         description="Build a first-upload Chrome Web Store ZIP."
     )
     parser.add_argument(
         "--output",
         type=Path,
-        default=OUTPUT,
-        help=f"Output ZIP path (default: {OUTPUT.name})",
+        default=default_output,
+        help=f"Output ZIP path (default: {default_output.name})",
     )
     return parser.parse_args()
 
@@ -67,7 +70,7 @@ def main() -> int:
 
     with zipfile.ZipFile(output) as archive:
         packaged_manifest = json.loads(archive.read("manifest.json"))
-        assert packaged_manifest["version"] == "0.2.0"
+        assert packaged_manifest["version"] == manifest["version"]
         assert "key" not in packaged_manifest
         assert archive.namelist()[0] == "manifest.json"
         assert not any(
