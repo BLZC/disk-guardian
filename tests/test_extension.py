@@ -3,7 +3,11 @@ from __future__ import annotations
 import base64
 import hashlib
 import json
+import subprocess
+import sys
+import tempfile
 import unittest
+import zipfile
 from pathlib import Path
 
 
@@ -54,6 +58,28 @@ class ExtensionManifestTests(unittest.TestCase):
         self.assertIn("/api/extension/status", scripts)
         self.assertNotIn("/api/cleanup/", scripts)
         self.assertNotIn("https://", scripts)
+
+    def test_store_package_omits_development_key(self) -> None:
+        script = ROOT / "scripts/package_chrome_store.py"
+        with tempfile.TemporaryDirectory() as temporary:
+            package = Path(temporary) / "store.zip"
+            result = subprocess.run(
+                [
+                    sys.executable,
+                    str(script),
+                    "--output",
+                    str(package),
+                ],
+                cwd=ROOT,
+                text=True,
+                capture_output=True,
+                check=False,
+            )
+            self.assertEqual(result.returncode, 0, result.stderr)
+            with zipfile.ZipFile(package) as archive:
+                manifest = json.loads(archive.read("manifest.json"))
+                self.assertNotIn("key", manifest)
+                self.assertEqual(archive.namelist()[0], "manifest.json")
 
 
 if __name__ == "__main__":

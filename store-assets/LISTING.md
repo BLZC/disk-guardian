@@ -118,10 +118,9 @@ https://github.com/BLZC/disk-guardian
 ## 首次上传后检查
 
 1. 打开 Package 标签页并记录 Item ID。
-2. 如果 Item ID 不是 `ccpomkognonnccbjmiapheoadpnepnde`，不要提交审核。
-3. 从 Package 页复制商店 Public key，更新 `manifest.json` 的 `key`。
-4. 升级扩展版本号并重新打包。
-5. 使用商店 Item ID 重新安装 Companion：
+2. 从 Package 页复制商店 Public key，更新 `manifest.json` 的 `key`。
+3. 升级扩展版本号并重新打包后续版本。
+4. 使用商店 Item ID 重新安装 Companion：
 
 ```bash
 ./scripts/install.sh --extension-id <商店 Item ID>

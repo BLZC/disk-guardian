@@ -58,14 +58,17 @@ Native Messaging。
 ccpomkognonnccbjmiapheoadpnepnde
 ```
 
-Chrome Web Store 可能分配不同 ID。获得商店 ID 后必须让用户使用它安装或
-升级 Companion：
+首次上传商店时使用 `scripts/package_chrome_store.py` 生成的专用 ZIP。
+这个包会移除开发版自签 `key`，由 Chrome Web Store 分配正式 Item ID。
+获得商店 ID 后必须让用户使用它安装或升级 Companion：
 
 ```bash
 ./scripts/install.sh --extension-id <商店扩展ID>
 ```
 
-否则 Companion 不会向商店版扩展返回跨域数据。
+否则 Companion 不会向商店版扩展返回跨域数据。上传后从 Package 页面复制
+商店 Public key，再更新源码 `manifest.json` 的 `key`，使后续开发版与商店
+版本使用相同 ID。
 
 ## 上架素材
 
@@ -83,18 +86,15 @@ Chrome Web Store 可能分配不同 ID。获得商店 ID 后必须让用户使�
 
 ## 打包
 
-ZIP 根目录必须直接包含 `manifest.json`：
+ZIP 根目录必须直接包含 `manifest.json`。首次商店上传使用：
 
 ```bash
-cd chrome-extension
-zip -r ../disk-guard-chrome-extension-0.2.0.zip . \
-  -x '*.DS_Store'
-cd ..
-shasum -a 256 disk-guard-chrome-extension-0.2.0.zip \
-  > disk-guard-chrome-extension-0.2.0.zip.sha256
+python3 scripts/package_chrome_store.py
+shasum -a 256 -c disk-guard-chrome-store-0.2.0.zip.sha256
 ```
 
-提交前解压到空目录并通过 `chrome://extensions` 真实加载。
+商店包不含开发版 `key`。提交前解压到空目录并通过
+`chrome://extensions` 真实加载。
 
 ## 开发者后台流程
 
